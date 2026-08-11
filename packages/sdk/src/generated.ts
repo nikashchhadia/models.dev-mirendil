@@ -172,6 +172,7 @@ export type ModelFamily =
   | "qwen3.6"
   | "qwen3.7-max"
   | "qwen3.7-plus"
+  | "qwen3.8-max"
   | "qwerky"
   | "ray"
   | "recraft"
