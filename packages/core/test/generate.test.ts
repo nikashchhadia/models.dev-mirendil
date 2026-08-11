@@ -45,7 +45,7 @@ describe("catalog generation", () => {
     });
   });
 
-  test("base_model can factor metadata without changing provider JSON", async () => {
+  test("base_model preserves the canonical relationship in provider JSON", async () => {
     await withFixture(async (root) => {
       await write(root, "providers/direct/provider.toml", providerToml("Direct"));
       await write(root, "providers/factored/provider.toml", providerToml("Factored"));
@@ -96,11 +96,13 @@ cache_read = 0.125
         },
       ]);
 
-      expect(catalog.providers.factored?.models.model).toEqual(
-        catalog.providers.direct?.models.model,
-      );
-      expect(catalog.providers.factored?.models.model).not.toHaveProperty(
+      expect(catalog.providers.factored?.models.model).toEqual({
+        ...catalog.providers.direct?.models.model,
+        base_model: "lab/model",
+      });
+      expect(catalog.providers.factored?.models.model).toHaveProperty(
         "base_model",
+        "lab/model",
       );
       expect(catalog.providers.factored?.models.model).not.toHaveProperty(
         "benchmarks",
@@ -193,21 +195,29 @@ input = ["text"]
     expect(matches).toEqual([]);
   });
 
-  test("repository provider JSON strips authored metadata pointers", async () => {
+  test("repository provider JSON preserves only valid base_model pointers", async () => {
     const root = path.join(import.meta.dirname, "..", "..", "..");
     const providers = await generate(path.join(root, "providers"));
-    const leaked: string[] = [];
+    const invalid: string[] = [];
+    let mapped = 0;
 
     for (const [providerID, provider] of Object.entries(providers)) {
       for (const [modelID, model] of Object.entries(provider.models)) {
         const encoded = stable(model);
-        if (encoded.includes("base_model") || encoded.includes("base_model_omit")) {
-          leaked.push(`${providerID}/${modelID}`);
+        if (encoded.includes("base_model_omit")) {
+          invalid.push(`${providerID}/${modelID}: base_model_omit`);
+        }
+        if (model.base_model !== undefined) {
+          mapped++;
+          if (!existsSync(path.join(root, "models", `${model.base_model}.toml`))) {
+            invalid.push(`${providerID}/${modelID}: ${model.base_model}`);
+          }
         }
       }
     }
 
-    expect(leaked).toEqual([]);
+    expect(mapped).toBeGreaterThan(0);
+    expect(invalid).toEqual([]);
   });
 
   test("repository provider JSON excludes model-only metadata", async () => {

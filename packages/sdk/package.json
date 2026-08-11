@@ -1,15 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@opencode-ai/models",
-  "version": "0.0.0",
-  "description": "Official typed client for the models.dev API \u2014 an open database of AI model capabilities, pricing, and limits",
+  "name": "models-dev-mirendil",
+  "version": "0.1.0",
+  "description": "Mirendil-maintained models.dev catalog with explicit canonical base_model mappings",
   "type": "module",
   "sideEffects": false,
   "license": "MIT",
-  "homepage": "https://models.dev",
+  "homepage": "https://github.com/tetranoir/models.dev-mirendil",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anomalyco/models.dev.git",
+    "url": "git+https://github.com/tetranoir/models.dev-mirendil.git",
     "directory": "packages/sdk"
   },
   "keywords": [
@@ -64,5 +64,9 @@
     "effect": "4.0.0-beta.83",
     "typescript": "catalog:",
     "zod": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

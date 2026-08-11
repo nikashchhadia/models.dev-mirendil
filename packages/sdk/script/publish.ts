@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Publishes @opencode-ai/models to npm, opencode-style:
+// Publishes models-dev-mirendil to npm:
 // - the version is never stored in git: it is read from npm
 //   plus a semver bump computed here (patch by default);
 // - `--if-changed` (scheduled data releases) skips publishing when the
@@ -7,9 +7,8 @@
 //   the currently published tarball;
 // - package.json is restored after publishing.
 //
-// Auth: npm Trusted Publishing (OIDC) in CI — no token needed once the
-// package is linked to this repo+workflow on npmjs.com. `--provenance` is
-// added automatically when running in GitHub Actions.
+// Auth: CI supplies NPM_API_KEY through NODE_AUTH_TOKEN. The token is never
+// written by this script. `--provenance` is added in GitHub Actions.
 
 import path from "node:path"
 import { appendFile, mkdtemp, rm } from "node:fs/promises"
@@ -18,7 +17,7 @@ import { $ } from "bun"
 import { loadCatalog, snapshotPayload } from "./generate.ts"
 
 const pkg = path.join(import.meta.dirname, "..")
-const packageName = "@opencode-ai/models"
+const packageName = "models-dev-mirendil"
 const packageJsonPath = path.join(pkg, "package.json")
 
 const bumpArg = process.argv.find((argument) => argument.startsWith("--bump="))?.slice("--bump=".length) ?? "patch"
@@ -30,7 +29,9 @@ if (!["patch", "minor", "major"].includes(bumpArg)) {
 }
 
 async function currentVersion(): Promise<string> {
-  return (await $`npm view ${packageName} version`.text()).trim()
+  const result = await $`npm view ${packageName} version`.quiet().nothrow()
+  if (result.exitCode !== 0) return "0.0.0"
+  return result.text().trim() || "0.0.0"
 }
 
 function bump(version: string, kind: string): string {

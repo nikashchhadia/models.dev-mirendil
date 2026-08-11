@@ -14,3 +14,16 @@ test("snapshot exports providers, models, generatedAt, and a default catalog", a
   expect(typeof model?.name).toBe("string")
   expect(typeof model?.limit.context).toBe("number")
 })
+
+
+test("snapshot preserves canonical base_model relationships", async () => {
+  const snapshot = await import("../src/snapshot.js")
+  const mapped = Object.values(snapshot.providers)
+    .flatMap((provider: any) => Object.values(provider.models))
+    .filter((model: any) => model.base_model !== undefined) as Array<{ base_model: string }>
+
+  expect(mapped.length).toBeGreaterThan(0)
+  for (const model of mapped) {
+    expect(snapshot.models[model.base_model]).toBeDefined()
+  }
+})

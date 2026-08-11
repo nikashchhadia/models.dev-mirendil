@@ -165,12 +165,14 @@ function mergeBaseModel(
     });
   }
 
-  const { base_model: _baseModel, base_model_omit: omit, ...overrides } = model;
+  const { base_model, base_model_omit: omit, ...overrides } = model;
   const merged: Record<string, unknown> = structuredClone(
     mergeDeep(inheritableModelMetadata(base), overrides),
   );
 
   applyOmit(merged, omit ?? []);
+  // Preserve the authored canonical relationship in generated provider data.
+  merged.base_model = base_model;
   return merged;
 }
 

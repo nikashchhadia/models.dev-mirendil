@@ -245,6 +245,7 @@ export type ModelMetadata = z.infer<typeof ModelMetadata>;
 
 const ModelBase = z.object({
   id: z.string(),
+  base_model: z.string().min(1, "Base model cannot be empty").optional(),
   name: z.string().min(1, "Model name cannot be empty"),
   description: z.string().min(1, "Model description cannot be empty"),
   family: ModelFamily.optional(),

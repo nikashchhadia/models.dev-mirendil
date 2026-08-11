@@ -1,0 +1,76 @@
+name: Sync Upstream and Publish
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * *"
+
+concurrency:
+  group: mirendil-upstream-sync-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  sync-test-publish:
+    if: github.repository == 'tetranoir/models.dev-mirendil'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mirror
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Fast-forward from upstream
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/anomalyco/models.dev.git
+          git fetch --no-tags upstream dev
+          if ! git merge-base --is-ancestor HEAD upstream/dev; then
+            echo "Mirror contains commits absent from upstream; merge upstream to preserve Mirendil changes."
+          fi
+          git merge --no-edit upstream/dev
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate catalog
+        run: bun validate
+
+      - name: Test Mirendil mapping contract
+        run: >-
+          bun test packages/core/test/generate.test.ts
+          --test-name-pattern 'base_model preserves|provider JSON preserves'
+
+      - name: Test SDK
+        run: bun run test
+        working-directory: packages/sdk
+
+      - name: Push synchronized dev branch
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated uncommitted files; refusing to publish."
+            git status --short
+            exit 1
+          fi
+          git push origin dev
+
+      - name: Publish changed snapshot
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
+        run: bun script/publish.ts --bump=patch --if-changed
+        working-directory: packages/sdk
