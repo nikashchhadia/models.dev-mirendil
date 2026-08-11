@@ -2,6 +2,11 @@ name: Sync Upstream and Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      force_publish:
+        description: "Publish a patch even when snapshot data is unchanged"
+        type: boolean
+        default: false
   schedule:
     - cron: "17 6 * * *"
 
@@ -72,5 +77,11 @@ jobs:
       - name: Publish changed snapshot
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
-        run: bun script/publish.ts --bump=patch --if-changed
+          FORCE_PUBLISH: ${{ inputs.force_publish || false }}
+        run: |
+          args=(--bump=patch)
+          if [ "$FORCE_PUBLISH" != "true" ]; then
+            args+=(--if-changed)
+          fi
+          bun script/publish.ts "${args[@]}"
         working-directory: packages/sdk
