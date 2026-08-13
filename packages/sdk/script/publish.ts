@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Publishes models-dev-mirendil to npm:
+// Publishes @mirendil/models-dev to npm:
 // - the version is never stored in git: it is read from npm
 //   plus a semver bump computed here (patch by default);
 // - `--if-changed` (scheduled data releases) skips publishing when the
@@ -17,7 +17,7 @@ import { $ } from "bun"
 import { loadCatalog, snapshotPayload } from "./generate.ts"
 
 const pkg = path.join(import.meta.dirname, "..")
-const packageName = "models-dev-mirendil"
+const packageName = "@mirendil/models-dev"
 const packageJsonPath = path.join(pkg, "package.json")
 
 const bumpArg = process.argv.find((argument) => argument.startsWith("--bump="))?.slice("--bump=".length) ?? "patch"

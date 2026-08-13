@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "models-dev-mirendil",
+  "name": "@mirendil/models-dev",
   "version": "0.1.0",
   "description": "Mirendil-maintained models.dev catalog with explicit canonical base_model mappings",
   "type": "module",
