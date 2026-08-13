@@ -32,6 +32,8 @@ jobs:
       - name: Fast-forward from upstream
         run: |
           set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/anomalyco/models.dev.git
           git fetch --no-tags upstream dev
           if ! git merge-base --is-ancestor HEAD upstream/dev; then
