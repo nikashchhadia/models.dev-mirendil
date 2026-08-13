@@ -18,6 +18,7 @@ export type ModelFamily =
   | "claude"
   | "claude-fable"
   | "claude-haiku"
+  | "claude-mythos"
   | "claude-opus"
   | "claude-sonnet"
   | "codestral"
