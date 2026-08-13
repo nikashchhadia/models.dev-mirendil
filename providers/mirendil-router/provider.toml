@@ -1,0 +1,5 @@
+name = "Mirendil Router"
+env = ["MIRENDIL_ROUTER_API_KEY"]
+npm = "@ai-sdk/openai-compatible"
+doc = "https://router.mirendil.dev"
+api = "https://router.mirendil.dev/v1"
